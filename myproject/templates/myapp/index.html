@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload and Data Entry</title>
+    <style>
+        #loading {
+            display: none;
+        }
+        #progress-bar-container {
+            display: none;
+            margin-top: 10px;
+        }
+        #progress-bar {
+            width: 0%;
+            height: 20px;
+            background-color: #4CAF50;
+        }
+        #upload-message {
+            color: green;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        @keyframes loading {
+        0% { color: black; }
+        20% { color: red; }
+        40% { color: orange; }
+        60% { color: green; }
+        80% { color: blue; }
+        100% { color: purple; }
+    }
+
+    #loading-icon {
+        animation-name: loading;
+        animation-duration: 0.7s;
+        animation-iteration-count: infinite;
+    }
+    </style>
+    {% load static %}  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO" crossorigin="anonymous"></script>
+    
+    
+
+</head>
+<body>
+    <h1>Image Upload and Data Entry</h1>
+    <form method="post" enctype="multipart/form-data" id="uploadForm">
+        {% csrf_token %} 
+        <label for="mobile">Mobile No:</label>
+        <input type="tel" name="mobile" pattern="[0-9]{10}" required title="Please enter a 10-digit numeric mobile number"><br><br>
+        <label for="name">Name:</label>
+        <input type="text" name="name" required><br><br>
+        <label for="file">Choose File:</label>
+        <input type="file" name="file" accept="image/*" required><br><br>
+
+        <!-- Loading icon -->
+        <div id="loading-icon">Uploading...</div>
+
+        <!-- Submit button -->
+        <button type="submit" id="submit-button">Upload and Submit</button>
+
+        <div id="progress-bar-container">
+            <div id="progress-bar"></div>
+        </div>
+        <div id="upload-message"></div>
+    </form>
+    
+
+    <script>
+        const socket = io.connect('http://' + document.domain + ':' + location.port);
+
+// Progress Updates
+socket.on('progress', (progress) => {
+    // Update progress bar
+});
+
+// Notifications
+socket.on('notification', (data) => {
+   // Display notification
+});
+
+// Chat
+socket.emit('join_room', { room: 'chatroom1' });
+
+socket.on('chat_message', (message) => {
+    // Display message in chat area
+});
+
+// ... (Add logic to send events to the server for updates, chat messages, etc.)
+
+        const form = document.getElementById('uploadForm'); 
+        const loadingIcon = document.getElementById('loading-icon');
+        const progressBarContainer = document.getElementById('progress-bar-container');
+        const progressBar = document.getElementById('progress-bar');
+        const uploadMessage = document.getElementById('upload-message');
+        const submitButton = document.getElementById('submit-button');
+    
+        socket.on('progress', function(msg) {
+            progressBar.style.width = msg + '%';
+        });
+    
+        document.addEventListener('DOMContentLoaded', function() {
+            loadingIcon.style.display = 'none'; 
+            progressBarContainer.style.display = 'none'; 
+    
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+    
+                uploadMessage.style.display = 'none';
+    
+                loadingIcon.style.display = 'block';
+                progressBarContainer.style.display = 'block';
+                submitButton.style.display = 'none'; 
+    
+                const formData = new FormData(this);
+    
+                fetch('/', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    // Handle success
+                    console.log(response);
+                    loadingIcon.style.display = 'none';
+                    progressBarContainer.style.display = 'none';
+                    uploadMessage.textContent = 'File upload successful!';
+                    uploadMessage.style.display = 'block'; 
+                    submitButton.style.display = 'block';
+                    form.reset();
+                })
+                .catch(error => {
+                    // Handle error
+                    console.error(error);
+                    loadingIcon.style.display = 'none';
+                    progressBarContainer.style.display = 'none';
+                    uploadMessage.textContent = 'Error during upload.';
+                    uploadMessage.style.display = 'block';
+                    submitButton.style.display = 'block'; 
+                });
+            });
+        });
+
+        
+    </script>
+
+    
+
+</body>
+
+</html>
